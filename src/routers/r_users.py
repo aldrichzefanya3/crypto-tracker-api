@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from src.database import SessionLocal
-from src.repositories import users
+from src.repositories import tokens, users
 from sqlalchemy.orm import Session
-from src.schemas import s_users, s_coins
+from src.schemas import s_users, s_coins, s_tokens
 from src import repositories as db
 
 router = APIRouter(
@@ -25,6 +25,19 @@ async def register_user(user: s_users.UserCreate, db: Session = Depends(get_db))
         raise HTTPException(status_code=404, detail="Email already registered")
     return users.create_user(db, user)
 
-@router.post("/sign-in/")
-async def login():
-    return {"Code": 200}
+@router.post("/sign-in/", response_model=s_tokens.Token)
+async def login(user: s_users.UserLogin, db: Session = Depends(get_db)):
+    user = users.authenticate(db, user.email, user.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    access_token = tokens.generate_access_token(user.email)
+
+    tokens.save_token(db, token=access_token, email=user.email)
+
+    return { "access_token": access_token }
+

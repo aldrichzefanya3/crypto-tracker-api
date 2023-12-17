@@ -8,6 +8,10 @@ class UserCreate(UserBase):
     email: str
     password: str
 
+class UserLogin(UserBase):
+    email: str
+    password: str
+
 class User(UserBase):
     id: int
     coins: list[Coin] = []
