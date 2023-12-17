@@ -1,9 +1,10 @@
+from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from src.database import SessionLocal
+from src.models.m_users import User
 from src.repositories import tokens, users
 from sqlalchemy.orm import Session
-from src.schemas import s_users, s_coins, s_tokens
-from src import repositories as db
+from src.schemas import s_users, s_tokens
 
 router = APIRouter(
     prefix="/auth",
@@ -41,3 +42,8 @@ async def login(user: s_users.UserLogin, db: Session = Depends(get_db)):
 
     return { "access_token": access_token }
 
+@router.get("/sign-out/")
+async def logout(current_user: User = Depends(tokens.decode_token), db: Session = Depends(get_db)):
+    tokens.delete_token(db, current_user.email)
+
+    return { "access_token": None }
