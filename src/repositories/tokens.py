@@ -59,31 +59,38 @@ def save_token(db: Session, token: str, email: str):
 def decode_token(token: Annotated[User, Depends(oauth2_scheme)], db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=401,
-        detail="Could not validate credentials",
+        detail="Invalid credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
         payload = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
 
         email: str = payload.get("sub")
+
         if email is None:
             raise credentials_exception
-
-        user = get_user_by_email(db, email=email)
-    except JWTError:
-        raise credentials_exception
-    
-    return user
-
-def delete_token(db: Session, email:str):
+        
         user = get_user_by_email(db, email=email)
 
         token_data = get_token_by_user_id(db, user_id=user.id)
-
-        if not token_data:
-            return
         
-        db.delete(token_data)
-        db.commit()
+        if token != token_data.token:
+            raise credentials_exception
 
-        return 
+        return user
+    except JWTError:
+        raise credentials_exception
+    
+
+def delete_token(db: Session, email:str):
+    user = get_user_by_email(db, email=email)
+
+    token_data = get_token_by_user_id(db, user_id=user.id)
+
+    if not token_data:
+        return
+    
+    db.delete(token_data)
+    db.commit()
+
+    return 

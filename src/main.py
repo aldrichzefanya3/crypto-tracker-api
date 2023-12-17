@@ -24,4 +24,4 @@ m_users.Base.metadata.create_all(engine)
 m_coins.Base.metadata.create_all(engine)
 
 app.include_router(r_users.router)
-# app.include_router(r_coins.router)
+app.include_router(r_coins.router)

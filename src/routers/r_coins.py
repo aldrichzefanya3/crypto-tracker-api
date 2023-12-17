@@ -1,12 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from src.database import SessionLocal
-from src.repositories import tokens, users
 from sqlalchemy.orm import Session
-from src.schemas import s_users, s_tokens
+from src.models.m_users import User
+from src.repositories import coins, tokens
+from src.schemas import s_coins
+from src.utils.api_consumer import hit_api_coin_asset_by_id
 
 router = APIRouter(
-    prefix="/coin",
-    tags=["crypto coin"],
+    prefix="/my-coin",
+    tags=["coin"],
     responses={404: {"description": "Not Found"}}
 )
 
@@ -17,26 +19,43 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/sign-up/", response_model=s_users.User)
-async def register_user(user: s_users.UserCreate, db: Session = Depends(get_db)):
-    is_user_exists = users.get_user_by_email(db, user.email)
-    if is_user_exists:
-        raise HTTPException(status_code=404, detail="Email already registered")
-    return users.create_user(db, user)
+@router.post("/add/{coin_id}", response_model=s_coins.Coin)
+async def add_coin(coin_id: str, current_user: User = Depends(tokens.decode_token), db: Session = Depends(get_db)):
+    user_id = current_user.id
+    
+    get_coin = hit_api_coin_asset_by_id(f"{"v2/assets/"}{coin_id}")
 
-@router.post("/sign-in/", response_model=s_tokens.Token)
-async def login(user: s_users.UserLogin, db: Session = Depends(get_db)):
-    user = users.authenticate(db, user.email, user.password)
-    if not user:
+    if not get_coin:
         raise HTTPException(
-            status_code=401,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=404,
+            detail="Coin Not Found",
         )
+    
+    coin = get_coin.get("data", {})
 
-    access_token = tokens.generate_access_token(user.email)
+    coin_name = coin.get("name")
+    coin_price = coin.get("priceUsd")
 
-    tokens.save_token(db, token=access_token, email=user.email)
+    coin_data = {
+        "coin_name": coin_name,
+        "coin_price": coin_price
+    }
 
-    return { "access_token": access_token }
+    coin = coins.get_coin_by_email_and_coin_name(db, user_id=user_id, coin_name=coin_name)
+
+    if coin:
+        raise HTTPException(status_code=404, detail="Coin Has Been Added")
+
+    add_coin = coins.create_coin(db, coin_data, user_id)
+
+    return add_coin
+
+@router.delete("/remove/{id}")
+async def remove_coin(id: str, current_user: User = Depends(tokens.decode_token), db: Session = Depends(get_db)):
+    coin_data = coins.delete_coin(db, id)
+
+    if not coin_data:
+        raise HTTPException(status_code=404, detail="Coin Not Found")
+
+    return { "detail": "Coin Has Been Removed" }
 
