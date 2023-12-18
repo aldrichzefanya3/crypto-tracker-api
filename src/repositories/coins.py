@@ -1,7 +1,8 @@
-from sqlalchemy.orm import Session
+from fastapi import HTTPException
+from sqlalchemy.orm import Session, joinedload
+
 from src.models import m_coins
 
-from src.schemas import s_coins
 
 def create_coin(db: Session, coin_data: dict, user_id: str):
     coin_name = coin_data.get("coin_name")
@@ -15,6 +16,12 @@ def create_coin(db: Session, coin_data: dict, user_id: str):
 
     return db_coin
 
+def get_coins(db: Session, user_id: int, page: int, per_page: int):
+    skip: int = (page - 1) * per_page
+    limit: int = per_page
+
+    return db.query(m_coins.Coin).filter(m_coins.Coin.user_id == user_id).options(joinedload(m_coins.Coin.user)).offset(skip).limit(limit).all()
+
 def get_coin_by_id(db: Session, id: int):
     return db.query(m_coins.Coin).filter(m_coins.Coin.id == id).first()
 
@@ -25,7 +32,7 @@ def delete_coin(db: Session, id: int):
     coin = get_coin_by_id(db, id=id)
 
     if not coin:
-        return False 
+        raise HTTPException(status_code=404, detail="Coin Not Found")
     
     db.delete(coin)
     db.commit()

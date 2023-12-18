@@ -1,11 +1,9 @@
 
-from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-from jose import JWTError, jwt
+from sqlalchemy.orm import Session
 
-
-from src.schemas import s_users, s_tokens
 from src.models import m_users
+from src.schemas import s_users
 
 pwd_context = CryptContext(schemes=["bcrypt"])
 

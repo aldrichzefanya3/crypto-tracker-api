@@ -1,8 +1,11 @@
 
+import uuid
+
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-import uuid
+
 from src.database import Base
+
 
 class Coin(Base):
     __tablename__ = "coins"

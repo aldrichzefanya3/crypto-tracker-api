@@ -1,6 +1,6 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 
 app = FastAPI()
 
@@ -16,8 +16,8 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-from .models import m_coins, m_users
 from .database import engine
+from .models import m_coins, m_users
 from .routers import r_coins, r_users
 
 m_users.Base.metadata.create_all(engine)

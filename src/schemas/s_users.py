@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from src.schemas.s_coins import Coin
+
 
 class UserBase(BaseModel):
     email: str
@@ -14,7 +14,6 @@ class UserLogin(UserBase):
 
 class User(UserBase):
     id: int
-    coins: list[Coin] = []
-
+    
     class Config:
         from_attributes = True

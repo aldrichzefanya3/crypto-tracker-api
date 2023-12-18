@@ -1,15 +1,17 @@
 
 import os
-from typing import Annotated
-from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
-from jose import JWTError, jwt
+from typing import Annotated
+
+from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from sqlalchemy.orm import Session
+
 from src.database import SessionLocal
+from src.models import m_tokens
 from src.models.m_users import User
 from src.repositories.users import get_user_by_email
-from src.models import m_tokens
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
