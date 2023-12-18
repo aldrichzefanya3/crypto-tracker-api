@@ -41,14 +41,3 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install all pac
 404 = Resource Not Found
 
 500 = Internal Server Error
-
-## ENV
-200 = OK
-
-401 = Unauthorized
-
-422 = Unprocessable Content
-
-404 = Resource Not Found
-
-500 = Internal Server Error
