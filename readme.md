@@ -21,6 +21,9 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install all pac
 (.venv) C:\example-project> pip install -r requirements.txt
 ```
 
+## Setting the environment
+Please provide **JWT_SECRET_KEY** value with your own private key
+
 ## Starting the application
 ```bash
 (.venv) C:\example-project> python run.py
