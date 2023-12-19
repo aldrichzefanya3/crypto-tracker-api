@@ -29,11 +29,6 @@ Please provide **JWT_SECRET_KEY** value with your own private key
 (.venv) C:\example-project> python run.py
 ```
 
-## Running the application
-```bash
-(.venv) C:\example-project> python run.py
-```
-
 ## Codes
 200 = OK
 
